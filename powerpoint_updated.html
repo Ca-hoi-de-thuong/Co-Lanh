@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Góc nhà Lanh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCx_2asDCUoZsu7OgkEdX4AaLpOY8WpBAc",
+      authDomain: "goc-nha-lanh.firebaseapp.com",
+      databaseURL: "https://goc-nha-lanh-default-rtdb.firebaseio.com",
+      projectId: "goc-nha-lanh",
+      storageBucket: "goc-nha-lanh.firebasestorage.app",
+      messagingSenderId: "156836980441",
+      appId: "1:156836980441:web:f911121df2155bae73c0c8",
+      measurementId: "G-JB3WBCERF4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+
+    function renderFiles(category) {
+      const listRef = ref(db, category);
+      const listEl = document.getElementById("file-list");
+      onValue(listRef, (snapshot) => {
+        listEl.innerHTML = "";
+        snapshot.forEach(childSnapshot => {
+          const data = childSnapshot.val();
+          const item = document.createElement("div");
+          item.className = "file-item";
+          item.innerHTML = `
+            <span>${data.title}</span> |
+            <a href="${data.link}" target="_blank">Xem online</a>
+            <a href="${data.link}" download>Tải về</a>
+          `;
+          listEl.appendChild(item);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFiles("PowerPoint");
+
+      if (window.location.hash === "#admin") {
+        document.getElementById("upload-section")?.classList.remove("hidden");
+      }
+
+      document.getElementById("uploadForm")?.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const title = document.getElementById("title").value;
+        const link = document.getElementById("link").value;
+
+        const newRef = push(ref(db, "PowerPoint"));
+        set(newRef, {
+          title: title,
+          link: link,
+          timestamp: Date.now()
+        }).then(() => {
+          alert("Tải tài liệu lên thành công!");
+          document.getElementById("uploadForm").reset();
+        });
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #fff0f5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      background: linear-gradient(to right, #ffd6e8, #c3f0f4);
+      padding: 40px 20px;
+    }
+    header h1 {
+      font-size: 2em;
+      color: #d14c8b;
+    }
+    main {
+      padding: 30px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .file-item {
+      background: #f0f4c3;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .file-item a {
+      margin-right: 10px;
+      color: #388e3c;
+      text-decoration: none;
+    }
+    .upload-form {
+      background: #e1f5fe;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 40px;
+    }
+    .upload-form label, .upload-form input {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+      font-size: 1em;
+    }
+    .upload-form input[type="submit"] {
+      background-color: #4fc3f7;
+      border: none;
+      padding: 10px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PowerPoint – Bài giảng</h1>
+  </header>
+  <main>
+    <div id="file-list" class="file-list"></div>
+
+    <section id="upload-section" class="hidden">
+      <h2>Tải tài liệu lên (chỉ chủ sở hữu)</h2>
+      <form id="uploadForm" class="upload-form">
+        <label for="title">Tên tài liệu:</label>
+        <input type="text" id="title" required>
+        <label for="link">Liên kết tải tài liệu:</label>
+        <input type="url" id="link" required>
+        <input type="submit" value="Gửi tài liệu">
+      </form>
+    </section>
+  </main>
+</body>
+</html>
